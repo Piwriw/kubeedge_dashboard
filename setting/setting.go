@@ -53,6 +53,7 @@ type K8sConfig struct {
 	Host      string `mapstructure:"host"`
 	TokenPath string `mapstructure:"tokenPath"`
 	AuthModel string `mapstructure:"authModel"`
+	Token     string `mapstructure:"token"`
 }
 
 func Init(filePath string) (err error) {

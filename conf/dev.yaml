@@ -31,5 +31,6 @@ redis:
 
 k8s:
   authModel: "token"
-  host: "124.222.110.11"
+  host: "10.10.124.19"
   tokenPath: ".kube/token.txt"
+  token: ""

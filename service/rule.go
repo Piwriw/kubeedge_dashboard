@@ -1,8 +1,10 @@
 package service
 
 import (
-	"github.com/kubernetes-client/go/kubernetes/client"
+	"encoding/json"
+	"errors"
 	"new-ec-dashboard/models"
+	"new-ec-dashboard/models/base"
 )
 
 var (
@@ -22,7 +24,7 @@ var (
 )
 
 func CreateRuleEndPoint(routerParams *models.RouterPointParams) (data interface{}, err error) {
-	var routerPointBody models.RouterPointBody
+	var routerPointBody models.RouterPoint
 	routerPointBody.ApiVersion = routerPointApiVersion
 	routerPointBody.Kind = routerPointKind
 	routerPointBody.Metadata.Name = routerParams.Name
@@ -31,43 +33,66 @@ func CreateRuleEndPoint(routerParams *models.RouterPointParams) (data interface{
 	if routerParams.Properties == nil || routerParams.Properties == "" {
 		routerParams.Properties = "{}"
 	}
-	routerPointBody.Spec.Properties=routerParams.Properties
+	routerPointBody.Spec.Properties = routerParams.Properties
 
-	localVarOptionals := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.CreateNamespacedCustomObject(ctx, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural, routerPointBody, *localVarOptionals)
+	cr, err := cliCRD.CreateCR(routerPointBody, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	ruleEndPoint := &models.RouterPoint{}
+	if err = json.Unmarshal(cr, ruleEndPoint); err != nil {
+		return "", err
+	}
+	return ruleEndPoint, nil
 }
 
 func GetRuleEndPointList() (data interface{}, err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural, "")
+	ruleEndpointBytes, err := cliCRD.GetCRList(routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	ruleEndPointList := &base.CRDList{}
+	if err = json.Unmarshal(ruleEndpointBytes, ruleEndPointList); err != nil {
+		return "", err
+	}
+	return ruleEndPointList, nil
 }
 
-func DeleteEndPoint(routerModel *models.RouterPointParams) (data interface{}, err error) {
-	m := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.DeleteNamespacedCustomObject(ctx, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural, routerModel.Name, client.V1DeleteOptions{}, *m)
+func isExistEndPoint(rulePointName string) bool {
+	rd, err := GetRulePoint(rulePointName)
 	if err != nil {
-		return
+		return false
 	}
-	return
+	if rd == nil {
+		return false
+	}
+	return true
+}
+func DeleteEndPoint(routerModel *models.RouterPointParams) error {
+	if isExist := isExistEndPoint(routerModel.Name); !isExist {
+		return errors.New("不存在这个RuleEndPoint")
+	}
+	_, err := cliCRD.DeleteCR(routerModel.Name, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetRulePoint(rulePointName string) (data interface{}, err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural, rulePointName)
+	cr, err := cliCRD.GetCR(rulePointName, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	ruleEndPoint := &models.RouterPoint{}
+	if err = json.Unmarshal(cr, ruleEndPoint); err != nil {
+		return "", err
+	}
+	return ruleEndPoint, nil
 }
 
 func CreateRule(ruleModel *models.RuleParams) (data interface{}, err error) {
-	var ruleBody models.RuleBody
+	var ruleBody models.Rule
 
 	ruleBody.ApiVersion = ruleApiVersion
 	ruleBody.Kind = ruleKind
@@ -76,35 +101,58 @@ func CreateRule(ruleModel *models.RuleParams) (data interface{}, err error) {
 	ruleBody.Spec.SourceResource = ruleModel.SourceResource
 	ruleBody.Spec.Target = ruleModel.Target
 	ruleBody.Spec.TargetResource = ruleModel.TargetResource
-	localVarOptionals := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.CreateNamespacedCustomObject(ctx, ruleGroup, ruleVersion, ruleNameSpace, rulePlural, ruleBody, *localVarOptionals)
+	cr, err := cliCRD.CreateCR(ruleBody, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	rule := &models.Rule{}
+	if err = json.Unmarshal(cr, rule); err != nil {
+		return nil, err
+	}
+	return rule, nil
 }
 
 func GetRuleList() (data interface{}, err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, ruleGroup, ruleVersion, ruleNameSpace, rulePlural, "")
+	ruleBytes, err := cliCRD.GetCRList(ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	ruleList := &base.CRDList{}
+	if err = json.Unmarshal(ruleBytes, ruleList); err != nil {
+		return "", err
+	}
+	return ruleList, nil
 }
 
-func DeleteRule(ruleModel *models.RuleParams) (data interface{}, err error) {
-	m := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.DeleteNamespacedCustomObject(ctx, ruleGroup, ruleVersion, ruleNameSpace, rulePlural, ruleModel.Name, client.V1DeleteOptions{}, *m)
+func isExistRule(ruleName string) bool {
+	rule, err := GetRule(ruleName)
 	if err != nil {
-		return
+		return false
 	}
-	return
+	if rule == nil {
+		return false
+	}
+	return true
+}
+func DeleteRule(ruleModel *models.RuleParams) error {
+	if isExist := isExistRule(ruleModel.Name); !isExist {
+		return errors.New("不存在这个Rule")
+	}
+	_, err := cliCRD.DeleteCR(ruleModel.Name, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetRule(ruleName string) (data interface{}, err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, ruleGroup, ruleVersion, ruleNameSpace, rulePlural, ruleName)
+	cr, err := cliCRD.GetCR(ruleName, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	rule := &models.Rule{}
+	if err = json.Unmarshal(cr, rule); err != nil {
+		return "", err
+	}
+	return rule, nil
 }

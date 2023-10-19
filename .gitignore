@@ -1,3 +1,4 @@
-/.kube
-/crds
-/web_app.log
+.kube/
+crds/
+web_app.log
+.idea

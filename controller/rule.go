@@ -75,10 +75,10 @@ func DeleteEndPointHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	_, err := service.DeleteEndPoint(p)
+	err := service.DeleteEndPoint(p)
 	if err != nil {
 		zap.L().Error("service.DeleteEndPoint(p) is failed", zap.Error(err))
-		ResponseError(c, CodeServeBusy)
+		ResponseErrorWithMsg(c, 404, err.Error())
 		return
 	}
 	ResponseSuccess(c, CodeSuccess)
@@ -157,7 +157,7 @@ func GetRuleListHandler(c *gin.Context) {
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
 // @Security ApiKeyAuth
-// @Router /router/rule/ [post]
+// @Router /router/rule/ [delete]
 func DeleteRuleHandler(c *gin.Context) {
 	p := new(models.RuleParams)
 	if err := c.ShouldBindJSON(p); err != nil {
@@ -170,10 +170,10 @@ func DeleteRuleHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	_, err := service.DeleteRule(p)
+	err := service.DeleteRule(p)
 	if err != nil {
 		zap.L().Error("service.DeleteRule(p) is failed", zap.Error(err))
-		ResponseError(c, CodeServeBusy)
+		ResponseErrorWithMsg(c, 404, err.Error())
 		return
 	}
 	ResponseSuccess(c, CodeSuccess)

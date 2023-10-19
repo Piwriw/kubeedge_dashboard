@@ -14,12 +14,14 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 	"new-ec-dashboard/setting"
+	"new-ec-dashboard/utils"
 	"path/filepath"
 )
 
 var clientSet *kubernetes.Clientset
 var clientAPI *client.APIClient
 var ctx context.Context
+var cliCRD *utils.CRDClient
 
 //type ApiKeyBody struct {
 //	APIKey client.APIKey
@@ -83,13 +85,13 @@ func InitK8sClient() error {
 	default:
 		return errors.New("目前只支持 token | config")
 	}
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	return nil
 }
 func ClientWithConfig() error {
-	kubeconifg := ".kube/config"
+	kubeconifg := "config"
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -115,7 +117,10 @@ func ClientWithConfig() error {
 }
 
 func ClientWithToken() error {
-	token, err := ioutil.ReadFile(setting.Conf.K8sConfig.TokenPath)
+	// init CRDClient
+	cliCRD = utils.CreateCRDClient(setting.Conf.K8sConfig.Token, setting.Conf.K8sConfig.Host, "6443")
+
+	token, err := ioutil.ReadFile(setting.Conf.K8sConfig.Token)
 	if err != nil {
 		return err
 	}
