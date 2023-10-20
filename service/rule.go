@@ -7,26 +7,26 @@ import (
 	"new-ec-dashboard/models/base"
 )
 
-var (
-	routerPointApiVersion = "rules.kubeedge.io/v1"
-	routerPointKind       = "RuleEndpoint"
-	routerPointGroup      = "rules.kubeedge.io"
-	routerPointVersion    = "v1"
-	routerPointNamespace  = "default"
-	routerPointPlural     = "ruleendpoints"
+const (
+	RouterPointApiVersion = "rules.kubeedge.io/v1"
+	RouterPointKind       = "RuleEndpoint"
+	RouterPointGroup      = "rules.kubeedge.io"
+	RouterPointVersion    = "v1"
+	RouterPointNamespace  = "default"
+	RouterPointPlural     = "ruleendpoints"
 
-	ruleGroup      = "rules.kubeedge.io"
-	ruleVersion    = "v1"
-	ruleNameSpace  = "default"
-	rulePlural     = "rules"
-	ruleApiVersion = "rules.kubeedge.io/v1"
-	ruleKind       = "Rule"
+	RuleGroup      = "rules.kubeedge.io"
+	RuleVersion    = "v1"
+	RuleNameSpace  = "default"
+	RulePlural     = "rules"
+	RuleApiVersion = "rules.kubeedge.io/v1"
+	RuleKind       = "Rule"
 )
 
 func CreateRuleEndPoint(routerParams *models.RouterPointParams) (data interface{}, err error) {
 	var routerPointBody models.RouterPoint
-	routerPointBody.ApiVersion = routerPointApiVersion
-	routerPointBody.Kind = routerPointKind
+	routerPointBody.ApiVersion = RouterPointApiVersion
+	routerPointBody.Kind = RouterPointKind
 	routerPointBody.Metadata.Name = routerParams.Name
 	routerPointBody.Spec.RuleEndpointType = routerParams.RuleEndpointType
 
@@ -35,7 +35,7 @@ func CreateRuleEndPoint(routerParams *models.RouterPointParams) (data interface{
 	}
 	routerPointBody.Spec.Properties = routerParams.Properties
 
-	cr, err := cliCRD.CreateCR(routerPointBody, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
+	cr, err := cliCRD.CreateCR(routerPointBody, RouterPointGroup, RouterPointVersion, RouterPointNamespace, RouterPointPlural)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func CreateRuleEndPoint(routerParams *models.RouterPointParams) (data interface{
 }
 
 func GetRuleEndPointList() (data interface{}, err error) {
-	ruleEndpointBytes, err := cliCRD.GetCRList(routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
+	ruleEndpointBytes, err := cliCRD.GetCRList(RouterPointGroup, RouterPointVersion, RouterPointNamespace, RouterPointPlural)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func DeleteEndPoint(routerModel *models.RouterPointParams) error {
 	if isExist := isExistEndPoint(routerModel.Name); !isExist {
 		return errors.New("不存在这个RuleEndPoint")
 	}
-	_, err := cliCRD.DeleteCR(routerModel.Name, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
+	_, err := cliCRD.DeleteCR(routerModel.Name, RouterPointGroup, RouterPointVersion, RouterPointNamespace, RouterPointPlural)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func DeleteEndPoint(routerModel *models.RouterPointParams) error {
 }
 
 func GetRulePoint(rulePointName string) (data interface{}, err error) {
-	cr, err := cliCRD.GetCR(rulePointName, routerPointGroup, routerPointVersion, routerPointNamespace, routerPointPlural)
+	cr, err := cliCRD.GetCR(rulePointName, RouterPointGroup, RouterPointVersion, RouterPointNamespace, RouterPointPlural)
 	if err != nil {
 		return nil, err
 	}
@@ -94,14 +94,14 @@ func GetRulePoint(rulePointName string) (data interface{}, err error) {
 func CreateRule(ruleModel *models.RuleParams) (data interface{}, err error) {
 	var ruleBody models.Rule
 
-	ruleBody.ApiVersion = ruleApiVersion
-	ruleBody.Kind = ruleKind
+	ruleBody.ApiVersion = RuleApiVersion
+	ruleBody.Kind = RuleKind
 	ruleBody.Metadata.Name = ruleModel.Name
 	ruleBody.Spec.Source = ruleModel.Source
 	ruleBody.Spec.SourceResource = ruleModel.SourceResource
 	ruleBody.Spec.Target = ruleModel.Target
 	ruleBody.Spec.TargetResource = ruleModel.TargetResource
-	cr, err := cliCRD.CreateCR(ruleBody, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
+	cr, err := cliCRD.CreateCR(ruleBody, RuleGroup, RuleVersion, RuleNameSpace, RulePlural)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func CreateRule(ruleModel *models.RuleParams) (data interface{}, err error) {
 }
 
 func GetRuleList() (data interface{}, err error) {
-	ruleBytes, err := cliCRD.GetCRList(ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
+	ruleBytes, err := cliCRD.GetCRList(RuleGroup, RuleVersion, RuleNameSpace, RulePlural)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func DeleteRule(ruleModel *models.RuleParams) error {
 	if isExist := isExistRule(ruleModel.Name); !isExist {
 		return errors.New("不存在这个Rule")
 	}
-	_, err := cliCRD.DeleteCR(ruleModel.Name, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
+	_, err := cliCRD.DeleteCR(ruleModel.Name, RuleGroup, RuleVersion, RuleNameSpace, RulePlural)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func DeleteRule(ruleModel *models.RuleParams) error {
 }
 
 func GetRule(ruleName string) (data interface{}, err error) {
-	cr, err := cliCRD.GetCR(ruleName, ruleGroup, ruleVersion, ruleNameSpace, rulePlural)
+	cr, err := cliCRD.GetCR(ruleName, RuleGroup, RuleVersion, RuleNameSpace, RulePlural)
 	if err != nil {
 		return nil, err
 	}
