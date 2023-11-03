@@ -1,0 +1,137 @@
+{
+	"info": {
+		"_postman_id": "dc13d4eb-9d05-41f3-a055-27323d0cd291",
+		"name": "rule",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17080408"
+	},
+	"item": [
+		{
+			"name": "GetRuleList",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/rule/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"rule",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateRule",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"joohwan-rule\",\n    \"source\":\"test3\",\n    \"sourceResource\":{\n        \"path\":\"/rest/ddd\"\n    },\n    \"target\":\"test4\",\n    \"targetResource\":{\n        \"topic:\":\"/api/cc\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/rule/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"rule",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetRule",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "javascript"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/rule/default/joohwan-rule",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"rule",
+						"default",
+						"joohwan-rule"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteRule",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"joohwan-rule\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/rule/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"rule",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

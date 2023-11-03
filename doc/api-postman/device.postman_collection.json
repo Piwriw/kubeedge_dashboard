@@ -1,0 +1,159 @@
+{
+	"info": {
+		"_postman_id": "f45619b8-3ff6-472a-8891-e9c7ca2318d8",
+		"name": "device",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17080408"
+	},
+	"item": [
+		{
+			"name": "GetList",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/device/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"device",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetDevice",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/device/default/joohwa-device/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"device",
+						"default",
+						"joohwa-device",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateDevice",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"dm_name\":\"tt\",\n    \"name\":\"joohwa-device\",\n    \"node_name\":\"edge-test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/device/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"device",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateDevice",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"joohwa-device\"\n    // \"desired\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/device/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"device",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteDevice",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device\": \"joohwa-device-modled\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/device/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"device",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

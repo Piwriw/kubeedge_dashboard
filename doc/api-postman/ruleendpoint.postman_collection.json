@@ -1,0 +1,126 @@
+{
+	"info": {
+		"_postman_id": "9ebf3dc7-22d8-4c29-a7d7-9ab3174e5828",
+		"name": "ruleendpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17080408"
+	},
+	"item": [
+		{
+			"name": "CreateRuleEndpoint",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"myendpoint\",\n    \"rule_endpoint_type\":\"rest\",\n    \"properties\":{}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/ruleendpoint/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"ruleendpoint",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetRuleEndpoint",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/ruleendpoint/default/myendpoint/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"ruleendpoint",
+						"default",
+						"myendpoint",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetRuleEndpointList",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/ruleendpoint/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"ruleendpoint",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteRuleEndpoint",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"myendpointdd\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/router/ruleendpoint/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"router",
+						"ruleendpoint",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

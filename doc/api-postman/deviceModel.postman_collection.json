@@ -1,0 +1,100 @@
+{
+	"info": {
+		"_postman_id": "7574d74d-8947-4b88-9ecd-479d78f66a3d",
+		"name": "deviceModel",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17080408"
+	},
+	"item": [
+		{
+			"name": "GetDeviceModelList",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/devicemodel/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"devicemodel",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateDeviceModel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\":\"xxx\",\"properties\":[\"version\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/devicemodel/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"devicemodel",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteDeviceModel",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\":\"tt\",\"properties\":[\"version\",\"file\"]}\n\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/device/devicemodel/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"devicemodel",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
