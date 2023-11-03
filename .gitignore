@@ -1,4 +1,4 @@
 .kube/
 crds/
-web_app.log
+*.log
 .idea

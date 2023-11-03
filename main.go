@@ -15,7 +15,6 @@ import (
 // @version 1.0
 // @description Go web边缘计算管理平台项目接口文档
 
-
 // @contact.name Piwriw
 // @contact.url https://github.com/Piwriw
 // @contact.email Piwriw@163.com
@@ -31,7 +30,7 @@ func main() {
 		fmt.Printf("load config failed, err:%v\n", err)
 		return
 	}
-	if err := service.InitK8sClient();err!=nil{
+	if err := service.InitK8sClient(); err != nil {
 		fmt.Printf("init InitK8sClient failed, err:%v\n", err)
 		return
 	}
@@ -50,7 +49,6 @@ func main() {
 	//	return
 	//}
 	//defer redis.Close()
-
 
 	// 初始化gin框架内置的校验器使用的翻译器
 	if err := controller.InitTrans("zh"); err != nil {
