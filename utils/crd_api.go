@@ -82,6 +82,44 @@ func (cli *CRDClient) PatchCR(cr interface{}, group, apiVersion, namespace, plur
 	return s, nil
 
 }
+
+// UpdateCR 更新CR
+func (cli *CRDClient) UpdateCR(cr interface{}, group, version, namespace, plural, crName string) ([]byte, error) {
+	//  忽略验证ssl
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}}
+	params := url.Values{}
+	params.Set("pretty", "true")
+	apiURL := fmt.Sprintf("https://%s:%s/apis/%s/%s/namespaces/%s/%s/%s", cli.Host, cli.Port, group, version, namespace, plural, crName)
+	apiURL += "?" + params.Encode()
+	crbytes, err := json.Marshal(cr)
+	if err != nil {
+		return nil, err
+	}
+	crbody := bytes.NewBuffer(crbytes)
+
+	req, _ := http.NewRequest("PUT", apiURL, crbody)
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", cli.Token))
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != 200 {
+		return nil, errors.New(response.Status)
+	}
+	s, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+
+}
+
 func (cli *CRDClient) CreateCR(cr interface{}, group, version, namespace, plural string) ([]byte, error) {
 	//  忽略验证ssl
 	client := &http.Client{Transport: &http.Transport{
@@ -108,7 +146,7 @@ func (cli *CRDClient) CreateCR(cr interface{}, group, version, namespace, plural
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode != 200 {
+	if response.StatusCode != 200 && response.StatusCode != 201 {
 		return nil, errors.New(response.Status)
 	}
 	s, err := io.ReadAll(response.Body)
@@ -171,7 +209,7 @@ func (cli *CRDClient) GetCRList(group, version, namespace, plural string) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode != 200 {
+	if response.StatusCode != 200 && response.StatusCode != 204 {
 		return nil, errors.New(response.Status)
 	}
 	s, err := io.ReadAll(response.Body)
