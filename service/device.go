@@ -2,34 +2,151 @@ package service
 
 import (
 	"encoding/json"
-	"github.com/kubernetes-client/go/kubernetes/client"
+	"errors"
 	"new-ec-dashboard/models"
+	"new-ec-dashboard/models/base"
 )
 
-var (
-	group     = "devices.kubeedge.io"
-	version   = "v1alpha2"
-	namespace = "default"
-	plural    = "devicemodels"
+const (
+	DeviceModelGroup      = "devices.kubeedge.io"
+	DeviceModelVersion    = "v1alpha2"
+	DeviceModelNamespace  = "default"
+	DeviceModelPlural     = "devicemodels"
+	DeviceModelAPIVersion = "devices.kubeedge.io/v1alpha2"
+	DeviceModelKind       = "DeviceModel"
 
-	deviceGroup      = "devices.kubeedge.io"
-	deviceVersion    = "v1alpha2"
-	deviceNameSpace  = "default"
-	devicePlural     = "devices"
-	deviceApiVersion = "devices.kubeedge.io/v1alpha2"
-	deviceKind       = "Device"
+	DeviceGroup      = "devices.kubeedge.io"
+	DeviceVersion    = "v1alpha2"
+	DeviceNameSpace  = "default"
+	DevicePlural     = "devices"
+	DeviceApiVersion = "devices.kubeedge.io/v1alpha2"
+	DeviceKind       = "Device"
 )
 
-func GetDeviceList() (data interface{}, err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, "")
-	if err != nil {
-		return
+func CreateDevice(deviceBean *models.DeviceBeanParams) error {
+	exist := isDeviceExist(deviceBean.Name)
+	if exist {
+		return errors.New("已经存在同名Device")
 	}
-	return
+	modelExist := isDeviceModelExist(deviceBean.DMName)
+	if !modelExist {
+		return errors.New("不存在这个DeviceModel")
+	}
+	deviceModel, err := GetDeviceModel(deviceBean.DMName)
+	if err != nil {
+		return err
+	}
+
+	device := &models.Device{}
+	device.ApiVersion = DeviceApiVersion
+	device.Kind = DeviceKind
+	device.Metadata.Name = deviceBean.Name
+	device.Spec.DeviceModelRef.Name = deviceBean.DMName
+
+	matchExpressions := []models.MatchExpressionsBody{{Key: "", Operator: "In", Values: []string{deviceBean.NodeName}}}
+	node := []models.MatchExpressions{{matchExpressions}}
+	device.Spec.NodeSelector.NodeSelectorTerms = node
+
+	var twins []models.DeviceTwins
+	for _, property := range deviceModel.Spec.Properties {
+		var twin models.DeviceTwins
+		twin.PropertyName = property.Name
+		twin.Desired.Metadata.Type = "string"
+		twin.Desired.Value = ""
+		twin.Reported.Metadata.Type = "string"
+		twin.Reported.Value = ""
+		twins = append(twins, twin)
+	}
+	device.Status.Twins = twins
+	_, err = cliCRD.CreateCR(device, DeviceGroup, DeviceVersion, DeviceNameSpace, DevicePlural)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func CreateDeviceModel(deviceModelParam *models.DeviceModelParam) (data interface{},err error) {
+func GetDevice(deviceName string) (*models.Device, error) {
+	cr, err := cliCRD.GetCR(deviceName, DeviceGroup, DeviceVersion, DeviceNameSpace, DevicePlural)
+	if err != nil {
+		return nil, err
+	}
+	device := &models.Device{}
+	if err = json.Unmarshal(cr, device); err != nil {
+		return nil, err
+	}
+	return device, nil
+}
+
+func isDeviceExist(deviceName string) bool {
+	device, err := GetDevice(deviceName)
+	if err != nil {
+		return false
+	}
+	if device.Spec.DeviceModelRef.Name == "" {
+		return false
+	}
+	return true
+}
+
+func DeleteDevice(deviceBean *models.DeviceBeanParams) (err error) {
+	if isExist := isDeviceExist(deviceBean.Name); !isExist {
+		return errors.New("不存在这个Device")
+	}
+	_, err = cliCRD.DeleteCR(deviceBean.Name, DeviceGroup, DeviceVersion, DeviceNameSpace, DevicePlural)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateDevice(modelBean *models.DeviceUpdateBeanParams) (b bool, err error) {
+	if exist := isDeviceExist(modelBean.Name); !exist {
+		return false, errors.New("不存在这个Device")
+	}
+	deviceOld, err := GetDevice(modelBean.Name)
+	if err != nil {
+		return false, err
+	}
+	newTwins := make([]models.DeviceTwins, 0)
+	for _, twin := range deviceOld.Status.Twins {
+		m := modelBean.Desired.(map[string]interface{})
+		for key, val := range m {
+			if key == twin.PropertyName {
+				twin.Desired.Value = val.(string)
+			}
+		}
+
+		newTwins = append(newTwins, twin)
+	}
+	deviceOld.Status.Twins = newTwins
+	// 更新状态
+	ok, err := cliCRD.UpdateCR(deviceOld, DeviceGroup, DeviceVersion, DeviceNameSpace, DevicePlural, deviceOld.Metadata.Name)
+	if err != nil {
+		return false, err
+	}
+	if ok == nil {
+		return false, errors.New("更新失败")
+	}
+	return true, nil
+}
+
+func GetDeviceList() (data interface{}, err error) {
+	crds, err := cliCRD.GetCRList(DeviceGroup, DeviceVersion, DeviceNameSpace, DevicePlural)
+	if err != nil {
+		return nil, err
+	}
+	deviceList := &base.CRDList{}
+	if err = json.Unmarshal(crds, deviceList); err != nil {
+		return "", err
+	}
+	return deviceList, nil
+}
+
+func CreateDeviceModel(deviceModelParam *models.DeviceModelParam) error {
 	var properties []models.PropertiesBody
+	if exist := isDeviceModelExist(deviceModelParam.Name); exist {
+		return errors.New("已经存在这个DeviceModel")
+	}
 	for _, val := range deviceModelParam.Properties {
 		var p models.PropertiesBody
 		p.Name = val
@@ -37,159 +154,78 @@ func CreateDeviceModel(deviceModelParam *models.DeviceModelParam) (data interfac
 		p.Type.String.DefaultValue = ""
 		properties = append(properties, p)
 	}
-	var body models.DeviceBody
-	body.ApiVersion = "devices.kubeedge.io/v1alpha2"
-	body.Kind = "DeviceModel"
+	var body models.DeviceModel
+	body.ApiVersion = DeviceModelAPIVersion
+	body.Kind = DeviceModelKind
 	body.Metadata.Name = deviceModelParam.Name
 	body.Spec.Properties = properties
-	localVarOptionals := new(map[string]interface{})
-	//bodyJSON, err := json.Marshal(properties)
-	data, _, err = clientAPI.CustomObjectsApi.CreateNamespacedCustomObject(ctx, group, version, namespace, plural, body, *localVarOptionals)
+
+	_, err := cliCRD.CreateCR(body, DeviceModelGroup, DeviceModelVersion, DeviceModelNamespace, DeviceModelPlural)
 	if err != nil {
-		return
+		return nil
 	}
-	return
+	return nil
 }
 
-func GetDeviceModelList() (data interface{},err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, group, version, namespace, plural, "")
+func GetDeviceModelList() (data interface{}, err error) {
+	crs, err := cliCRD.GetCRList(DeviceModelGroup, DeviceModelVersion, DeviceModelNamespace, DeviceModelPlural)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	deviceModelList := &base.CRDList{}
+	if err = json.Unmarshal(crs, deviceModelList); err != nil {
+		return nil, err
+	}
+	return deviceModelList, nil
 }
 
-func GetDeviceModel(modelName string) (data interface{},err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, group, version, namespace, plural, modelName)
-	if err != nil {
-		return
+func GetDeviceModel(modelName string) (data *models.DeviceModel, err error) {
+	cr, err := cliCRD.GetCR(modelName, DeviceModelGroup, DeviceModelVersion, DeviceModelNamespace, DeviceModelPlural)
+	deviceModel := &models.DeviceModel{}
+	if err = json.Unmarshal(cr, deviceModel); err != nil {
+		return nil, err
 	}
-	return
+	return deviceModel, nil
 }
 
-func UpdateDeviceModel(deviceModel *models.DeviceModelParam) (data interface{},err error) {
-	oldModel, _, err := clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, group, version, namespace, plural, deviceModel.Name)
+func UpdateDeviceModel(deviceModelParam *models.DeviceModelParam) (data interface{}, err error) {
+	deviceModel, err := GetDeviceModel(deviceModelParam.Name)
 	if err != nil {
 		return
 	}
-	var properties []models.PropertiesBody
-	for _, val := range deviceModel.Properties {
-		var p models.PropertiesBody
-		p.Name = val
+	propertiesBody := make([]models.PropertiesBody, 0)
+	for _, property := range deviceModelParam.Properties {
+		p := &models.PropertiesBody{Name: property}
 		p.Type.String.AccessMode = "ReadWrite"
 		p.Type.String.DefaultValue = ""
-		properties = append(properties, p)
+		propertiesBody = append(propertiesBody, *p)
 	}
-
-	m := oldModel.(map[string]interface{})
-	spec := m["spec"]
-	spec.(map[string]interface{})["properties"] = properties
-	data, _, err = clientAPI.CustomObjectsApi.ReplaceNamespacedCustomObject(ctx, group, version, namespace, plural, deviceModel.Name, oldModel)
+	deviceModel.Spec.Properties = propertiesBody
+	_, err = cliCRD.UpdateCR(deviceModel, DeviceModelGroup, DeviceModelVersion, DeviceModelNamespace, DeviceModelPlural, deviceModelParam.Name)
 	if err != nil {
-		return
+		return false, err
 	}
-	return
+	return true, nil
 }
 
-func DeleteDeviceModel(deviceModel *models.DeviceModelParam) (data interface{},err error) {
-	m := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.DeleteNamespacedCustomObject(ctx, group, version, namespace, plural, deviceModel.Name, client.V1DeleteOptions{}, *m)
+func isDeviceModelExist(deviceModelName string) bool {
+	devicemodel, err := GetDeviceModel(deviceModelName)
 	if err != nil {
-		return
+		return false
 	}
-	return
+	if devicemodel.Spec.Properties == nil {
+		return false
+	}
+	return true
 }
 
-func CreateDevice(deviceBean *models.DeviceBeanParams) (data interface{},err error) {
-	localVarOptionals := new(map[string]interface{})
-	deviceModel, _, err := clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, group, version, namespace, plural, deviceBean.DmName)
+func DeleteDeviceModel(deviceModel *models.DeviceModelParam) error {
+	if exist := isDeviceModelExist(deviceModel.Name); !exist {
+		return errors.New("不存在这个DeviceModel")
+	}
+	_, err := cliCRD.DeleteCR(deviceModel.Name, DeviceModelGroup, DeviceModelVersion, DeviceModelNamespace, DeviceModelPlural)
 	if err != nil {
-		return
+		return err
 	}
-
-	m := deviceModel.(map[string]interface{})
-	spec := m["spec"]
-	p := spec.(map[string]interface{})["properties"]
-	properties := p.([]interface{})
-	var twins []models.DeviceTwins
-	for _, val := range properties {
-		tmp := val.(map[string]interface{})
-		var twin models.DeviceTwins
-		twin.PropertyName = tmp["name"].(string)
-		twin.Desired.Metadata.Type = "string"
-		twin.Desired.Value = ""
-		twin.Reported.Metadata.Type = "string"
-		twin.Reported.Value = ""
-		twins = append(twins, twin)
-	}
-	var deviceBeanBody models.DeviceBeanBody
-	deviceBeanBody.ApiVersion = deviceApiVersion
-	deviceBeanBody.Kind = deviceKind
-	deviceBeanBody.Metadata.Name = deviceBean.Name
-	deviceBeanBody.Spec.DeviceModelRef.Name = deviceBean.DmName
-
-	matchExpressions := []models.MatchExpressionsBody{{Key: "", Operator: "In", Values: []string{deviceBean.NodeName}}}
-	node := []models.MatchExpressions{{matchExpressions}}
-	deviceBeanBody.Spec.NodeSelector.NodeSelectorTerms = node
-
-	deviceBeanBody.Status.Twins = twins
-
-	data, _, err = clientAPI.CustomObjectsApi.CreateNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, deviceBeanBody, *localVarOptionals)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func GetDevice(deviceName string) (data interface{},err error) {
-	data, _, err = clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, deviceName)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func DeleteDevice(deviceBean *models.DeviceBeanParams) (data interface{},err error) {
-	localVarOptionals := new(map[string]interface{})
-	data, _, err = clientAPI.CustomObjectsApi.DeleteNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, deviceBean.Name, client.V1DeleteOptions{}, *localVarOptionals)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func UpdateDevice(modelBean *models.DeviceUpdateBeanParams) (err error){
-	oldData, _, err := clientAPI.CustomObjectsApi.GetNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, modelBean.Name)
-	if err != nil {
-		return
-	}
-	// 依次获取到字段属性
-	twinsT := oldData.(map[string]interface{})["status"].(map[string]interface{})["twins"].([]interface{})
-	var newTwins []models.DeviceTwins
-	for _, v :=range twinsT {
-		var dt models.DeviceTwins
-		bytes, err := json.Marshal(v)
-		if err != nil {
-			return err
-		}
-		err = json.Unmarshal(bytes, &dt)
-		if err != nil {
-			return err
-		}
-		// 给更新的字段属性更新
-		for key,dev:= range modelBean.Desired.(map[string]interface{}){
-			propertyName := dt.PropertyName
-			if key==propertyName {
-				dt.Desired.Value=dev.(string)
-			}
-		}
-		newTwins=append(newTwins,dt)
-	}
-	oldData.(map[string]interface{})["status"].(map[string]interface{})["twins"]=newTwins
-	// 在通过api-server 更新集群中YAML文件
-	_, _, err = clientAPI.CustomObjectsApi.ReplaceNamespacedCustomObject(ctx, deviceGroup, deviceVersion, deviceNameSpace, devicePlural, modelBean.Name , oldData)
-	if err != nil {
-		return
-	}
-	return
+	return nil
 }

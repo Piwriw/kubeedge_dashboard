@@ -10,17 +10,18 @@ type PropertiesBody struct {
 	} `json:"type"`
 }
 
-type DeviceBody struct {
+type DeviceModel struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
-		Name string `json:"name"`
+		ResourceVersion string `json:"resourceVersion"`
+		Name            string `json:"name"`
 	} `json:"metadata"`
 	Spec struct {
 		Properties []PropertiesBody `json:"properties"`
 	} `json:"spec"`
+	Status interface{}
 }
-
 
 type DeviceTwins struct {
 	PropertyName string `json:"propertyName"`
@@ -38,15 +39,16 @@ type DeviceTwins struct {
 	} `json:"reported"`
 }
 
-type DeviceBeanBody struct {
+type Device struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
-		Name interface{} `json:"name"`
+		Name            string `json:"name"`
+		ResourceVersion string `json:"resourceVersion"`
 	} `json:"metadata"`
 	Spec struct {
 		DeviceModelRef struct {
-			Name interface{} `json:"name"`
+			Name string `json:"name"`
 		} `json:"deviceModelRef"`
 		NodeSelector struct {
 			NodeSelectorTerms []MatchExpressions `json:"nodeSelectorTerms"`

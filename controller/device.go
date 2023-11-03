@@ -27,8 +27,8 @@ func GetDeviceListHandler(c *gin.Context) {
 }
 
 // CreateDeviceModelHandler : 获取Device Model详情
-// @Summary Get Device Model详情接口
-// @Tags Device Model详情相关接口
+// @Summary Get DeviceModel Model详情接口
+// @Tags DeviceModel Model详情相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -41,18 +41,18 @@ func CreateDeviceModelHandler(c *gin.Context) {
 		ResponseError(c, CodeInvalidParam)
 		return
 	}
-	model, err := service.CreateDeviceModel(deviceModel)
+	err := service.CreateDeviceModel(deviceModel)
 	if err != nil {
 		zap.L().Error("service.CreateDeviceModel(deviceModel) is failed", zap.Error(err))
 		ResponseError(c, CodeServeBusy)
 		return
 	}
-	ResponseSuccess(c, model)
+	ResponseSuccess(c, "成功创建设备模版！")
 }
 
 // GetDeviceModelListHandler : 获取Device Model列表详情
-// @Summary Get Device Model详情接口
-// @Tags Device Model详情相关接口
+// @Summary Get DeviceModel Model详情接口
+// @Tags DeviceModel Model详情相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -69,8 +69,8 @@ func GetDeviceModelListHandler(c *gin.Context) {
 }
 
 // GetDeviceModelHandler : 获取Device Model详情
-// @Summary Get Device Model详情接口
-// @Tags Device Model详情相关接口
+// @Summary Get DeviceModel Model详情接口
+// @Tags DeviceModel Model详情相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -88,8 +88,8 @@ func GetDeviceModelHandler(c *gin.Context) {
 }
 
 // UpdateDeviceModelHandler : 更新Device Model详情
-// @Summary Update Device Model详情接口
-// @Tags Device Model 相关接口
+// @Summary Update DeviceModel Model详情接口
+// @Tags DeviceModel Model 相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -113,8 +113,8 @@ func UpdateDeviceModelHandler(c *gin.Context) {
 }
 
 // DeleteDeviceModelHandler : 删除Device Model详情
-// @Summary DELETE Device Model详情接口
-// @Tags Device Model 相关接口
+// @Summary DELETE DeviceModel Model详情接口
+// @Tags DeviceModel Model 相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -132,7 +132,7 @@ func DeleteDeviceModelHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	_, err := service.DeleteDeviceModel(p)
+	err := service.DeleteDeviceModel(p)
 	if err != nil {
 		zap.L().Error(" service.DeleteDeviceModel(p) is failed", zap.Error(err))
 		ResponseError(c, CodeServeBusy)
@@ -142,8 +142,8 @@ func DeleteDeviceModelHandler(c *gin.Context) {
 }
 
 // CreateDeviceHandler : 删除Device
-// @Summary post Device 详情接口
-// @Tags Device  相关接口
+// @Summary post DeviceModel 详情接口
+// @Tags DeviceModel  相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
@@ -161,7 +161,7 @@ func CreateDeviceHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	_, err := service.CreateDevice(p)
+	err := service.CreateDevice(p)
 	if err != nil {
 		zap.L().Error("service.CreateDevice(p) is failed", zap.Error(err))
 		ResponseError(c, CodeServeBusy)
@@ -189,14 +189,14 @@ func GetDeviceHandler(c *gin.Context) {
 	ResponseSuccess(c, device)
 }
 
-// DeleteDeviceHandler : 删除 Device
-// @Summary Delete Device 详情接口
-// @Tags Device  相关接口
+// DeleteDeviceHandler : 删除 DeviceModel
+// @Summary Delete DeviceModel 详情接口
+// @Tags DeviceModel  相关接口
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string false "Bearer 用户令牌"
 // @Security ApiKeyAuth
-// @Router /device/device/ [post]
+// @Router /device/device/ [delete]
 func DeleteDeviceHandler(c *gin.Context) {
 	p := new(models.DeviceBeanParams)
 	if err := c.ShouldBindJSON(p); err != nil {
@@ -209,10 +209,10 @@ func DeleteDeviceHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	_, err := service.DeleteDevice(p)
+	err := service.DeleteDevice(p)
 	if err != nil {
 		zap.L().Error("service.DeleteDevice(p) is failed", zap.Error(err))
-		ResponseError(c, CodeServeBusy)
+		ResponseErrorWithMsg(c, 404, err.Error())
 		return
 	}
 	ResponseSuccess(c, CodeSuccess)
@@ -238,12 +238,11 @@ func UpdateDeviceHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
-	 err := service.UpdateDevice(p)
+	_, err := service.UpdateDevice(p)
 	if err != nil {
-		zap.L().Error("service.UpdateDevice(p) is failed",zap.Error(err))
-		ResponseError(c,CodeServeBusy)
+		zap.L().Error("service.UpdateDevice(p) is failed", zap.Error(err))
+		ResponseError(c, CodeServeBusy)
 		return
 	}
-	ResponseSuccess(c,CodeSuccess)
+	ResponseSuccess(c, CodeSuccess)
 }
-
