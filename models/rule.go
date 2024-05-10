@@ -1,6 +1,6 @@
 package models
 
-type RouterPointBody struct {
+type RouterPoint struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -12,7 +12,7 @@ type RouterPointBody struct {
 	} `json:"spec"`
 }
 
-type RuleBody struct {
+type Rule struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {

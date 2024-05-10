@@ -25,7 +25,7 @@ type DeviceModelParam struct {
 
 // DeviceBeanParams : 设备实例去请求参数
 type DeviceBeanParams struct {
-	DmName   string `json:"dm_name" `
+	DMName   string `json:"dm_name" `
 	Name     string `json:"name" `
 	NodeName string `json:"node_name" `
 }
