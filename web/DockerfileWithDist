@@ -1,0 +1,7 @@
+# 本地打包构建
+FROM nginx:alpine
+#接口访问地址
+ENV EC_DASHBOARD_HOST http://192.168.10.55:8000/
+COPY dist /usr/share/nginx/html/
+COPY default.conf.template /etc/nginx/templates/default.conf.template
+EXPOSE 80

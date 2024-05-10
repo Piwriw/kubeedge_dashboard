@@ -1,0 +1,17 @@
+version: "3"
+services:
+  ec-dashboard-web:
+    #指定镜像
+    image: edge.imooc.com/imooc_containers/ec-dashboard-web:v1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #指定容器名称
+    container_name: ec-dashboard-web
+    environment:
+      #后端接口访问地址
+      EC_DASHBOARD_HOST: http://192.168.10.107:8000/
+    ports:
+      - 8082:80
+    #开机自启
+    restart: always
