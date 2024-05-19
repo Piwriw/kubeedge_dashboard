@@ -28,10 +28,6 @@
 
 ![20240510184015](https://raw.githubusercontent.com/Piwriw/PicGo/master/image/20240510184015.png)
 
-### 应用列表
-
-![image-20240510184054079](C:\Users\huan\AppData\Roaming\Typora\typora-user-images\image-20240510184054079.png)
-
 ### ConfigMap列表
 
 ![20240510184109](https://raw.githubusercontent.com/Piwriw/PicGo/master/image/20240510184109.png)
