@@ -28,3 +28,9 @@ mysql:
 #  password: abc123456
 #  db: 0
 #  pool_size: 100
+
+k8s:
+  authModel: "token"
+  host: ""
+  tokenPath: "conf"
+  token: ""
